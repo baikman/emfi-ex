@@ -20,23 +20,28 @@ int main() {
     gpio_set_dir(EMP_PIN, GPIO_OUT);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
-    uart_init(UART0);
-    uart_init(UART1);
-    uart_init(UART1);
+    uart_inst_t *uart0 = uart_get_instance(UART0)
+
+    gpio_set_function(4, GPIO_FUNC_UART);
+    gpio_set_function(5, GPIO_FUNC_UART);
+    uart_inst_t *uart1 = uart_get_instance(UART1)
+
+    uart_init(uart0, 115200);
+    uart_init(uart1,115200);
 
     uint64_t cnt = 1;
     const uint64_t inc = 1;
-    uint8_t buf;
-    while (uart_read_blocking(UART1, buf, 1) != 'A') {
+    while (uart_getc(uart0) != 'A') {
         sleep_us(1);
     }
     while (true) {
+        uart_putc(uart1, 0x11);
         sleep_us(cnt);
         gpio_put(EMP_PIN, 1);
-        uint8_t ret = uart_read_blocking(UART1, buf, 1);
+        uint8_t ret = uart_getc(uart1);
         if (ret == 'B') {
             for (int i = 0; i < 4; i++) {
-                uart_write_blocking(UART0, 'A', 1);
+                uart_putc(uart0, (cnt & 0xFF));
                 cnt >>= 2;
             }
             break;
