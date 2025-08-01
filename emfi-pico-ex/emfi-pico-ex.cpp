@@ -2,9 +2,12 @@
 #include <stdbool.h>
 #include "stdlib.h"
 
-//#include "lib/driverlib/gpio.h"
+#include <lib/uart/uart.h>
+
+
 #include "pico/stdlib.h"
 #include "pico/time.h"
+//#include "pico/gpio.h"
 
 #define EMP_PIN 7
 
@@ -17,9 +20,8 @@ int main() {
     gpio_set_dir(EMP_PIN, GPIO_OUT);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
-    initialize_uarts();
-    uart_set_pin(UART1, )
     uart_init(UART0);
+    uart_init(UART1);
     uart_init(UART1);
 
     uint64_t cnt = 1;
