@@ -1,34 +1,44 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include "stdlib.h"
 
+#include "lib/driverlib/gpio.h"
 #include "pico/stdlib.h"
-#include "hardware/gpio.h"
+#include "pico/time.h"
+
+#define EMP_PIN 7
 
 #define LED_PIN 25
-
 int main() {
     stdio_init_all();
+    gpio_init(EMP_PIN);
     gpio_init(LED_PIN);
+
+    gpio_set_dir(EMP_PIN, GPIO_OUT);
     gpio_set_dir(LED_PIN, GPIO_OUT);
-    bool ledVal = false;
 
-    const uint32_t magic = 0xDEADBEEF;
+    initialize_uarts();
+    uart_init(UART0);
+    uart_init(UART0);
 
+    uint64_t cnt = 1;
+    const uint64_t inc = 1;
+    while (uart.read(UART0, 1, 0) != 'A') {
+        sleep_us(1);
+    }
     while (true) {
-        if (magic != 0xDEADBEEF) {
+        sleep_us(cnt);
+        gpio_put(EMP_PIN, 1);
+        uint8_t ret = uart_read(UART1, 1, 0);
+        if (ret == 'B') {
+            for (int i = 0; i < 4; i++) {
+                uart_write(UART0, cnt & 0xFF);
+                cnt >>= 2;
+            }
             break;
         }
-
-        if (ledVal) {
-            gpio_put(LED_PIN, 1);
-        } else {
-            gpio_put(LED_PIN, 0);
-        }
-
-        ledVal = !ledVal;
-
-        printf("Still running...\n");
-        sleep_ms(1000);
+        else if (ret != 'A') return -1;
+        cnt += inc;
     }
 
     // Control flow faulted via EMFI!!!
